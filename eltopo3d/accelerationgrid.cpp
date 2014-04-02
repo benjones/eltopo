@@ -91,14 +91,15 @@ AccelerationGrid::AccelerationGrid(AccelerationGrid& other) :
 
 AccelerationGrid& AccelerationGrid::operator=( const AccelerationGrid& other)
 {
-    m_cells.resize( other.m_cells.ni, other.m_cells.nj, other.m_cells.nk, 0 );
+  m_cells.resize( other.m_cells.ni, other.m_cells.nj, other.m_cells.nk);// no default , 0 );
     for ( size_t i = 0; i < m_cells.a.size(); ++i )
     {
-        if (other.m_cells.a[i])
+	  m_cells.a[i] = other.m_cells.a[i];
+	  /*        if (other.m_cells.a[i])
         {
             m_cells.a[i] = new std::vector<size_t>();
             *(m_cells.a[i]) = *(other.m_cells.a[i]);
-        }
+			}*/
     }
     
     m_elementidxs = other.m_elementidxs;
@@ -147,7 +148,8 @@ void AccelerationGrid::set( const Vec3st& dims, const Vec3d& xmin, const Vec3d& 
     m_cells.resize(dims[0], dims[1], dims[2]);    
     for(size_t i = 0; i < m_cells.a.size(); i++)
     {
-        m_cells.a[i] = 0;
+	  m_cells.a[i].clear();
+	  //m_cells.a[i] = 0; //null them when they were pointers
     }   
 }
 
@@ -219,12 +221,15 @@ void AccelerationGrid::add_element(size_t idx, const Vec3d& xmin, const Vec3d& x
         {
             for(int k = xmini[2]; k <= xmaxi[2]; k++)
             {
-                std::vector<size_t>*& cell = m_cells(i, j, k);
+			  std::vector<size_t>& cell =  m_cells(i,j,k);
+				/*                std::vector<size_t>*& cell = m_cells(i, j, k);
                 if(!cell)
                     cell = new std::vector<size_t>();
                 
                 cell->push_back(idx);
-                m_elementidxs[idx].push_back(Vec3st(i, j, k));
+				*/
+			  cell.push_back(idx);
+			  m_elementidxs[idx].push_back(Vec3st(i, j, k));
             }
         }
     }
@@ -244,15 +249,18 @@ void AccelerationGrid::remove_element(size_t idx)
     for(size_t c = 0; c < m_elementidxs[idx].size(); c++)
     {
         Vec3st cellcoords = m_elementidxs[idx][c];
-        std::vector<size_t>* cell = m_cells(cellcoords[0], cellcoords[1], cellcoords[2]);
-        
-        std::vector<size_t>::iterator it = cell->begin();
+        //std::vector<size_t>* cell = m_cells(cellcoords[0], cellcoords[1], cellcoords[2]);
+        std::vector<size_t>& cell = m_cells(cellcoords[0], cellcoords[1], cellcoords[2]);
+
+        //std::vector<size_t>::iterator it = cell->begin();
+		std::vector<size_t>::iterator it = cell.begin();
         while(*it != idx)
         {
             it++;
         }
         
-        cell->erase(it);
+        //cell->erase(it);
+		cell.erase(it);
     }
     
     m_elementidxs[idx].clear();
@@ -280,14 +288,16 @@ void AccelerationGrid::clear()
 {
     for(size_t i = 0; i < m_cells.a.size(); i++)
     {
+	  m_cells.a[i].clear();
+	  /*
         std::vector<size_t>*& cell = m_cells.a[i];  
         if(cell)
         {
             delete cell;
             cell = 0;
         }
-    }
-    
+	  */
+	}
     m_elementidxs.clear();
     m_elementxmins.clear();
     m_elementxmaxs.clear();
@@ -304,60 +314,73 @@ void AccelerationGrid::clear()
 
 void AccelerationGrid::find_overlapping_elements( const Vec3d& xmin, const Vec3d& xmax, std::vector<size_t>& results ) 
 {
-    if(m_lastquery == std::numeric_limits<unsigned int>::max())
+  if(m_lastquery == std::numeric_limits<unsigned int>::max())
     {
-        std::vector<unsigned int>::iterator iter = m_elementquery.begin();
-        for( ; iter != m_elementquery.end(); ++iter )
+	  std::vector<unsigned int>::iterator iter = m_elementquery.begin();
+	  for( ; iter != m_elementquery.end(); ++iter )
         {
-            *iter = 0;
+		  *iter = 0;
         }
-        m_lastquery = 0;
+	  m_lastquery = 0;
     }
     
-    ++m_lastquery;
+  ++m_lastquery;
     
-    Vec3i xmini, xmaxi;
-    boundstoindices(xmin, xmax, xmini, xmaxi);
+  Vec3i xmini, xmaxi;
+  boundstoindices(xmin, xmax, xmini, xmaxi);
     
-    for(int i = xmini[0]; i <= xmaxi[0]; ++i)
-    {
-        for(int j = xmini[1]; j <= xmaxi[1]; ++j)
-        {
-            for(int k = xmini[2]; k <= xmaxi[2]; ++k)
-            {
-                std::vector<size_t>* cell = m_cells(i, j, k);
+  for(int i = xmini[0]; i <= xmaxi[0]; ++i){
+	for(int j = xmini[1]; j <= xmaxi[1]; ++j){
+	  for(int k = xmini[2]; k <= xmaxi[2]; ++k){
+
+		std::vector<size_t>& cell = m_cells(i,j,k);
+		for(std::vector<size_t>::const_iterator citer = cell.begin();
+			citer != cell.end(); ++citer){
+		  size_t oidx = *citer;
+		  if(m_elementquery[oidx] < m_lastquery){
+			m_elementquery[oidx] = m_lastquery;
+			
+			const Vec3d& oxmin = m_elementxmins[oidx];
+			const Vec3d& oxmax = m_elementxmaxs[oidx];
+			
+			if( (xmin[0] <= oxmax[0] && xmin[1] <= oxmax[1] && xmin[2] <= oxmax[2]) &&
+				(xmax[0] >= oxmin[0] && xmax[1] >= oxmin[1] && xmax[2] >= oxmin[2]) ){
+			  results.push_back(oidx);
+			}
+		  }
+		  
+		}
+		/*
+		  //grid no longer holds pointers
+		std::vector<size_t>* cell = m_cells(i, j, k);
                 
-                if(cell)
-                {
-                    for( std::vector<size_t>::const_iterator citer = cell->begin(); citer != cell->end(); ++citer)
-                    {
-                        size_t oidx = *citer;
+		if(cell){
+		  for( std::vector<size_t>::const_iterator citer = cell->begin(); 
+			   citer != cell->end(); ++citer){
+
+			size_t oidx = *citer;
                         
-                        // Check if the object has already been found during this query
+			// Check if the object has already been found during this query
                         
-                        if(m_elementquery[oidx] < m_lastquery)
-                        {
+			if(m_elementquery[oidx] < m_lastquery){
                             
-                            // Object has not been found.  Set m_elementquery so that it will not be tested again during this query.
+			  // Object has not been found.  Set m_elementquery so that it will not be tested again during this query.
                             
-                            m_elementquery[oidx] = m_lastquery;
+			  m_elementquery[oidx] = m_lastquery;
                             
-                            const Vec3d& oxmin = m_elementxmins[oidx];
-                            const Vec3d& oxmax = m_elementxmaxs[oidx];
+			  const Vec3d& oxmin = m_elementxmins[oidx];
+			  const Vec3d& oxmax = m_elementxmaxs[oidx];
                             
-                            if( (xmin[0] <= oxmax[0] && xmin[1] <= oxmax[1] && xmin[2] <= oxmax[2]) &&
-                               (xmax[0] >= oxmin[0] && xmax[1] >= oxmin[1] && xmax[2] >= oxmin[2]) )
-                            {
-                                results.push_back(oidx);
-                            }
-                            
-                        }
-                    }
-                }
-                
-            }
-        }
-    }
+			  if( (xmin[0] <= oxmax[0] && xmin[1] <= oxmax[1] && xmin[2] <= oxmax[2]) &&
+				  (xmax[0] >= oxmin[0] && xmax[1] >= oxmin[1] && xmax[2] >= oxmin[2]) ){
+				results.push_back(oidx);
+			  }
+			  }
+			  }
+			  }*/
+	  }
+	}
+  }
 }
 
 

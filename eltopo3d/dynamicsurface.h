@@ -222,11 +222,12 @@ protected:
     friend class CollisionPipeline;
     friend class ImpactZoneSolver;
     friend class MeshSmoother;
-    
-    std::vector<Vec3d> pm_positions, pm_newpositions;
-    
-    // Temporary velocities field
-    std::vector<Vec3d> m_velocities;
+
+public:
+  std::vector<Vec3d> pm_positions, pm_newpositions;
+  
+  // Temporary velocities field
+  std::vector<Vec3d> m_velocities;
     
 };
 

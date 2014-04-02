@@ -119,7 +119,7 @@ void BroadPhaseGrid::build_acceleration_grid( AccelerationGrid& grid,
 void BroadPhaseGrid::update_broad_phase( const DynamicSurface& surface, bool continuous )
 {
     
-    double grid_scale = surface.get_average_edge_length();
+    double grid_scale = 2*surface.get_average_edge_length();
     
     // ---------------
     // vertices

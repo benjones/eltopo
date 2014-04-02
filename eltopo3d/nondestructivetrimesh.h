@@ -164,6 +164,7 @@ private:
     
     /// List of triangles: the fundamental data
     ///
+public:
     std::vector<Vec3st> m_tris;
     
 };

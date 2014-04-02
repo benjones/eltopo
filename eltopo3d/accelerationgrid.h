@@ -76,7 +76,8 @@ public:
     
     /// Each cell contains an array of indices specifying the elements whose AABBs overlap the cell
     ///
-    Array3<std::vector<size_t>* > m_cells;
+    Array3<std::vector<size_t> > m_cells;
+  //    Array3<std::vector<size_t>*> m_cells; //drop a layer of indirection
     
     /// For each element, a list of triples, each triple specifying a cell which overlaps the element. 
     ///
