@@ -2,6 +2,10 @@
 EL TOPO: ROBUST TOPOLOGICAL OPERATIONS FOR DYNAMIC EXPLICIT SURFACES
 ===============================================================================
 
+This project was written by Tyson Brochu and Robert Bridson at UBC, and (very,
+very slightly) modified by Ben Jones at U of Utah.  It's public domain.
+
+
 El Topo is a C-callable library built in C++.  This readme describes:
 
 - how to build the library
