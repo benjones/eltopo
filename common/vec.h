@@ -3,9 +3,9 @@
 
 #include <cassert>
 #include <cmath>
-#include <hashtable.h>
+//#include <hashtable.h>
 #include <iostream>
-#include <util.h>
+#include "util.h"
 
 // Defines a thin wrapper around fixed size C-style arrays, using template parameters,
 // which is useful for dealing with vectors of different dimensions.
@@ -466,9 +466,10 @@ inline void minmax(const Vec<N,T> &x0, const Vec<N,T> &x1, Vec<N,T> &xmin, Vec<N
 }
 
 template<unsigned int N, class T>
-inline void minmax(const Vec<N,T> &x0, const Vec<N,T> &x1, const Vec<N,T> &x2, Vec<N,T> &xmin, Vec<N,T> &xmax)
+inline void minmax(const Vec<N,T> &x0, const Vec<N,T> &x1, 
+				   const Vec<N,T> &x2, Vec<N,T> &xmin, Vec<N,T> &xmax)
 {
-    for(unsigned int i=0; i<N; ++i)
+  for(unsigned int i=0; i<N; ++i)
         minmax(x0.v[i], x1.v[i], x2.v[i], xmin.v[i], xmax.v[i]);
 }
 
