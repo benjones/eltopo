@@ -1,5 +1,5 @@
-#ifndef VEC_H
-#define VEC_H
+#ifndef _EL_TOPO_VEC_H //VEC_H clashes with other libraries
+#define _EL_TOPO_VEC_H
 
 #include <cassert>
 #include <cmath>
